@@ -1,0 +1,9 @@
+# Pixi
+.pixi/
+
+# macOS
+.DS_Store
+
+# Editor
+*.swp
+*~

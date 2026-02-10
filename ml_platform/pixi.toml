@@ -1,0 +1,89 @@
+[workspace]
+name = "ml-platform"
+version = "2026.2.0"
+description = "MaNIAC Lab ML platform environment"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64"]
+
+[dependencies]
+# Python
+python = "3.12.*"
+
+# CERN ROOT
+root = ">=6.32"
+
+# Java (OpenJDK 8 in ml_base)
+openjdk = "8.*"
+
+# ML frameworks
+tensorflow = "*"
+keras = "*"
+
+# Data science
+numpy = "*"
+pandas = "*"
+scipy = "*"
+scikit-learn = "*"
+pyarrow = "*"
+h5py = "*"
+pytables = "*"
+cython = "*"
+
+# Visualization
+matplotlib = "*"
+seaborn = "*"
+bokeh = "*"
+graphviz = "*"
+
+# Jupyter ecosystem
+jupyterlab = "*"
+jupyter = "*"
+ipykernel = "*"
+metakernel = "*"
+ipywidgets = "*"
+jupyterlab-git = "*"
+rise = "*"
+
+# HEP
+uproot = "*"
+
+# System tools (replacing apt-get from ml_base)
+curl = "*"
+wget = "*"
+unzip = "*"
+zip = "*"
+vim = "*"
+jq = "*"
+rsync = "*"
+git = "*"
+make = "*"
+compilers = "*"
+pkg-config = "*"
+
+# Libraries (replacing apt-get dev packages)
+freetype = "*"
+libpng = "*"
+zeromq = "*"
+hdf5 = "*"
+tbb = "*"
+zlib = "*"
+
+# Other
+requests = "*"
+pillow = "*"
+tqdm = "*"
+imageio = "*"
+
+[pypi-dependencies]
+# Packages NOT on conda-forge (or easier from PyPI)
+tensorflow-datasets = "*"
+keras-tuner = "*"
+plumbum = "*"
+jupyter-bokeh = "*"
+qtpy = "*"
+elasticsearch = "*"
+gymnasium = "*"          # gym is deprecated, gymnasium is the successor
+JSAnimation = "*"
+dask-labextension = "*"
+atlasify = "*"
+rucio-jupyterlab = "*"
