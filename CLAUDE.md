@@ -76,41 +76,22 @@ When adding a new image, ALL of these steps are required:
    *.md
    ```
 
-6. **Update workflow in TWO places:**
+6. **Update workflow:**
 
-   **A. Add change detection filter:**
+   Add a new entry to the `matrix.include` array in `.github/workflows/build-images.yaml`:
+
    ```yaml
-   changes:
-     outputs:
-       existing_image: ${{ steps.filter.outputs.existing_image }}
-       new_image: ${{ steps.filter.outputs.new_image }}  # ← ADD THIS
-     steps:
-       - uses: dorny/paths-filter@v3
-         with:
-           filters: |
-             existing_image:
-               - 'existing_image/**'
-             new_image:            # ← ADD THIS BLOCK
-               - 'new_image/**'
+   - name: new_image
+     context: ./new_image
+     dockerfile: ./new_image/Dockerfile
+     registries: |-
+       ghcr.io/maniaclab/new-image
+       docker.io/username/new-image
+     platforms: linux/amd64
+     build_args: CUDA_VERSION=12.6
    ```
 
-   **B. Add matrix entry:**
-   ```yaml
-   matrix:
-     image:
-       - name: existing_image
-         # ... config
-       - name: new_image        # ← ADD THIS ENTIRE BLOCK
-         context: ./new_image
-         dockerfile: ./new_image/Dockerfile
-         changed: ${{ needs.changes.outputs.new_image }}
-         registries:
-           - ghcr.io/maniaclab/new-image
-           - docker.io/username/new-image
-         platforms: linux/amd64
-         build_args: |
-           CUDA_VERSION=12.6
-   ```
+   **Important:** Use the YAML block scalar `|-` for the `registries` field to ensure proper formatting. The `docker/metadata-action` expects a newline-separated string.
 
 7. **Test locally:**
    ```bash
@@ -147,18 +128,24 @@ When changing dependencies or Dockerfile:
 
 ### 5. Workflow Matrix Pattern
 
-The `.github/workflows/build-images.yaml` uses a matrix to define images. Each matrix entry is a complete image definition.
+The `.github/workflows/build-images.yaml` uses a **static matrix** with an `include` array. All images are built on every trigger.
 
 **Key points:**
-- `changed: ${{ needs.changes.outputs.<image> }}` links to change detection
-- `registries:` is an array - gets joined with `\n` in metadata-action
-- `build_args:` is multiline string with `|` syntax
-- Build only runs if: `changed == 'true'` OR git tag OR manual trigger
+- Matrix is statically defined in YAML using `matrix.include`
+- ALL images are built on every trigger (push, PR, tag, manual)
+- `registries:` uses YAML block scalar (`|-`) for clean multiline format - required by `docker/metadata-action`
+- Matrix fields are accessed as `matrix.name`, `matrix.context`, etc. (not `matrix.image.name`)
+
+**Build triggers:**
+- **Push to main:** Build ALL images, push to registries
+- **Git tag `v*`:** Build ALL images, push with version tags
+- **Pull request:** Build ALL images, but don't push
+- **Manual dispatch:** Build ALL images, push to registries
 
 **When modifying workflow:**
 - ALWAYS validate YAML syntax (use yamllint or IDE validation)
-- ALWAYS test change detection logic
 - NEVER hardcode secrets in workflow (use `${{ secrets.NAME }}`)
+- Use `|-` for multiline `registries` field to ensure proper formatting
 
 ### 6. Common Mistakes to Avoid
 
@@ -171,8 +158,11 @@ The `.github/workflows/build-images.yaml` uses a matrix to define images. Each m
 ❌ **Committing pixi.toml without pixi.lock**
 - Breaks reproducibility
 
-❌ **Not updating both workflow locations when adding image**
-- Must update both `changes` job outputs/filters AND matrix
+❌ **Forgetting to add new image to workflow matrix**
+- Must add entry to `matrix.include` array in build-images.yaml
+
+❌ **Not using block scalar for registries field**
+- Use YAML block scalar: `registries: |-` with newlines, not inline strings or arrays
 
 ❌ **Not testing Docker build locally**
 - CI failures waste time; test locally first
@@ -215,25 +205,19 @@ Before committing changes that affect Docker builds:
 - `<image>/pixi.lock` - locked versions (DO NOT MODIFY MANUALLY)
 - `<image>/Dockerfile` - build instructions
 
-### 9. Change Detection Logic
+### 9. Build Behavior
 
-The workflow uses `dorny/paths-filter@v3` to detect changes:
+The workflow builds **ALL images on every trigger** for simplicity and consistency.
 
-```yaml
-filters: |
-  ml_platform:
-    - 'ml_platform/**'
-```
+**Build triggers:**
+- **Push to main:** Build and push all images
+- **Git tag `v*`:** Build and push all images with version tags
+- **Pull request:** Build all images (validation only, no push)
+- **Manual dispatch:** Build and push all images
 
-This means:
-- Changes to `ml_platform/**` set `needs.changes.outputs.ml_platform = 'true'`
-- The matrix entry checks `matrix.image.changed == 'true'`
-- If true (or git tag or manual), the build runs
+**No change detection:** The workflow intentionally does not use path filters or conditional building. This simplifies maintenance and ensures all images stay in sync.
 
-**When adding new images:**
-- Add filter in `changes` job
-- Add output in `changes.outputs`
-- Reference in matrix entry as `changed: ${{ needs.changes.outputs.<image> }}`
+**When adding new images:** Simply add an entry to the `matrix.include` array in the workflow file. No additional configuration needed.
 
 ### 10. Git Workflow
 
@@ -301,10 +285,9 @@ A change is complete when:
 1. ✅ Docker build succeeds locally
 2. ✅ Verification tests pass
 3. ✅ Both pixi.toml and pixi.lock committed (if dependencies changed)
-4. ✅ Workflow updated correctly (if new image)
-5. ✅ Change detection working (if new image)
-6. ✅ Commit message is semantic and descriptive
-7. ✅ README.md updated if user-facing behavior changed
+4. ✅ Workflow matrix updated (if new image added)
+5. ✅ Commit message is semantic and descriptive
+6. ✅ README.md updated if user-facing behavior changed
 
 ## Additional Context
 

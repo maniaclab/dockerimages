@@ -15,23 +15,7 @@ concurrency:
 permissions: {}
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-    outputs:
-      ml_platform: ${{ steps.filter.outputs.ml_platform }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            ml_platform:
-              - 'ml_platform/**'
-
   build:
-    needs: changes
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,30 +23,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image:
+        include:
           - name: ml_platform
             context: ./ml_platform
             dockerfile: ./ml_platform/Dockerfile
-            changed: ${{ needs.changes.outputs.ml_platform }}
-            registries:
-              - ghcr.io/maniaclab/ml-platform
-              - docker.io/ivukotic/ml_platform
-              - hub.opensciencegrid.org/usatlas/ml-platform
+            registries: |-
+              ghcr.io/maniaclab/ml-platform
+              docker.io/ivukotic/ml_platform
+              hub.opensciencegrid.org/usatlas/ml-platform
             platforms: linux/amd64
-            build_args: |
-              CUDA_VERSION=12.6
+            build_args: CUDA_VERSION=12.6
 
-    # Only build if image changed, or on tags/manual trigger
-    if: >-
-      matrix.image.changed == 'true'
-      || startsWith(github.ref, 'refs/tags/')
-      || github.event_name == 'workflow_dispatch'
-
-    name: Build ${{ matrix.image.name }}
+    name: Build ${{ matrix.name }}
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: docker/setup-buildx-action@v3
 
       - name: Login to ghcr.io
@@ -92,7 +67,7 @@ jobs:
         uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ join(matrix.image.registries, '\n') }}
+          images: ${{ matrix.registries }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
@@ -102,13 +77,13 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.image.context }}
-          file: ${{ matrix.image.dockerfile }}
-          platforms: ${{ matrix.image.platforms }}
-          build-args: ${{ matrix.image.build_args }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: ${{ matrix.platforms }}
+          build-args: ${{ matrix.build_args }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.image.name }}
-          cache-to: type=gha,scope=${{ matrix.image.name }},mode=max
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max
           pull: true
