@@ -166,18 +166,6 @@ Ensure `/host-libs/` is bound to host driver paths:
 singularity run --nv --bind /usr/lib/x86_64-linux-gnu:/host-libs ml-platform_latest.sif
 ```
 
-## Version History
-
-- **2026.2.0** - Initial consolidated release with Pixi
-  - Merged ml_base and ml_platform
-  - All dependencies via conda-forge + PyPI
-  - CUDA 13.0 support
-  - Python 3.12, ROOT 6.32+
-
-## Maintainer
-
-Ilija Vukotic <ivukotic@cern.ch>
-
 ## References
 
 - [Pixi Documentation](https://pixi.sh/)

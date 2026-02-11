@@ -208,18 +208,13 @@ The CI will automatically build and push to all configured registries.
 
 ```bash
 # Build image
-docker build --platform linux/amd64 -t ml-platform:test ml_platform/
+docker build --platform linux/amd64 -t <image>:test <image>/
 
-# Run tests
-docker run --rm ml-platform:test python -c "import tensorflow; print('OK')"
-docker run --rm ml-platform:test root --version
-docker run --rm ml-platform:test jupyter --version
+# Verify environment activates
+docker run --rm <image>:test python --version
 
 # Interactive shell
-docker run --rm -it ml-platform:test bash
-
-# Start Jupyter
-docker run --rm -p 9999:9999 ml-platform:test jupyter lab --ip=0.0.0.0 --port=9999
+docker run --rm -it <image>:test bash
 ```
 
 ### Releasing a Version
@@ -252,7 +247,7 @@ The base image `ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0` should be updated per
 Pixi automatically resolves the latest compatible versions unless pinned. To update:
 
 ```bash
-cd ml_platform/
+cd <image>/
 # Update pixi.toml with new version constraints
 vim pixi.toml
 
@@ -260,7 +255,7 @@ vim pixi.toml
 CONDA_OVERRIDE_CUDA=12.6 pixi install
 
 # Test
-docker build -t ml-platform:test .
+docker build -t <image>:test .
 
 # Commit both files
 git add pixi.toml pixi.lock
@@ -271,7 +266,6 @@ git commit -m "chore: update dependencies"
 
 - **GitHub Actions:** https://github.com/maniaclab/dockerimages/actions
 - **ghcr.io:** https://github.com/orgs/maniaclab/packages
-- **docker.io:** https://hub.docker.com/r/ivukotic/ml_platform
 - **OSG Harbor:** https://hub.opensciencegrid.org/harbor/projects
 
 ## Troubleshooting
@@ -319,7 +313,3 @@ RUN /app/entrypoint.sh curl -O https://example.com/file
 ## License
 
 [Add license information here]
-
-## Contact
-
-MaNIAC Lab - Ilija Vukotic <ivukotic@cern.ch>
