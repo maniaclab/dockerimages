@@ -219,17 +219,30 @@ docker run --rm -it <image>:test bash
 
 ### Releasing a Version
 
+This repository uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.DD` (year, zero-padded month, zero-padded day).
+
+**Example:**
+
 ```bash
-# Tag with semantic version
-git tag -a v2026.2.0 -m "Release 2026.2.0"
-git push origin v2026.2.0
+# Create annotated tag with CalVer format
+git tag -a v2026.02.11 -m "Initial consolidated release with Pixi
+
+  - Merged ml_base and ml_platform
+  - All dependencies via conda-forge + PyPI
+  - CUDA 13.0 support
+  - Python 3.12, ROOT 6.32+"
+
+# Push tag to trigger CI build
+git push origin v2026.02.11
 ```
 
-This triggers a full build of all images with tags:
-- `2026.2.0`
-- `2026.2`
+**Important:** Always use zero-padded month and day (e.g., `02` not `2`, `09` not `9`).
+
+This triggers a full build of all images with Docker tags:
+- `2026.02.11` (full CalVer)
+- `2026.02` (year-month)
 - `latest`
-- `sha-abc1234`
+- `sha-abc1234` (commit SHA)
 
 ## Maintenance
 
