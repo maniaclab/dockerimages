@@ -58,35 +58,27 @@ COPY --from=build /app/entrypoint.sh /app/entrypoint.sh
 
 ### CI/CD Workflow
 
-Image configurations are defined directly in `.github/workflows/build-images.yaml` as a matrix:
+Image configurations are defined directly in `.github/workflows/build-images.yaml` as a static matrix. All images are built on every trigger for simplicity and consistency:
 
 ```yaml
 matrix:
-  image:
+  include:
     - name: ml_platform
       context: ./ml_platform
       dockerfile: ./ml_platform/Dockerfile
-      changed: ${{ needs.changes.outputs.ml_platform }}
-      registries:
-        - ghcr.io/maniaclab/ml-platform
-        - docker.io/ivukotic/ml_platform
-        - hub.opensciencegrid.org/usatlas/ml-platform
+      registries: |-
+        ghcr.io/maniaclab/ml-platform
+        docker.io/ivukotic/ml_platform
+        hub.opensciencegrid.org/usatlas/ml-platform
       platforms: linux/amd64
-      build_args: |
-        CUDA_VERSION=12.6
+      build_args: CUDA_VERSION=12.6
 ```
 
 **Triggers:**
-- **Push to `main`:** Build changed images → tag as `latest` + `sha-abc1234`
-- **Git tag `v*`:** Build all images → tag as `X.Y.Z`, `X.Y`, `latest`, `sha-abc1234`
-- **Pull request:** Build changed images (no push, validation only)
-- **Manual:** `workflow_dispatch` builds all images
-
-**Change Detection:**
-Uses `dorny/paths-filter@v3` to detect which images changed. Builds only run if:
-- Image directory changed, OR
-- Git tag pushed, OR
-- Manual workflow trigger
+- **Push to `main`:** Build ALL images → tag as `latest` + `sha-abc1234`
+- **Git tag `v*`:** Build ALL images → tag as `X.Y.Z`, `X.Y`, `latest`, `sha-abc1234`
+- **Pull request:** Build ALL images (no push, validation only)
+- **Manual:** `workflow_dispatch` builds ALL images
 
 **Multi-Registry Push:**
 Authenticated via GitHub secrets:
@@ -171,41 +163,20 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 
 ### 6. Update Workflow
 
-Edit `.github/workflows/build-images.yaml`:
+Edit `.github/workflows/build-images.yaml` and add a new entry to the `matrix.include` array:
 
-**A. Add change detection filter:**
 ```yaml
-changes:
-  outputs:
-    ml_platform: ${{ steps.filter.outputs.ml_platform }}
-    new_image: ${{ steps.filter.outputs.new_image }}  # Add this
-  steps:
-    - uses: dorny/paths-filter@v3
-      with:
-        filters: |
-          ml_platform:
-            - 'ml_platform/**'
-          new_image:              # Add this block
-            - 'new_image/**'
+- name: new_image
+  context: ./new_image
+  dockerfile: ./new_image/Dockerfile
+  registries: |-
+    ghcr.io/maniaclab/new-image
+    docker.io/username/new-image
+  platforms: linux/amd64
+  build_args: CUDA_VERSION=12.6
 ```
 
-**B. Add matrix entry:**
-```yaml
-matrix:
-  image:
-    - name: ml_platform
-      # ... existing config
-    - name: new_image           # Add this block
-      context: ./new_image
-      dockerfile: ./new_image/Dockerfile
-      changed: ${{ needs.changes.outputs.new_image }}
-      registries:
-        - ghcr.io/maniaclab/new-image
-        - docker.io/username/new-image
-      platforms: linux/amd64
-      build_args: |
-        CUDA_VERSION=12.6
-```
+**Important:** Use the YAML block scalar `|-` for the `registries` field to ensure proper formatting. The workflow builds ALL images on every trigger.
 
 ### 7. Test Locally
 
@@ -336,15 +307,6 @@ RUN /app/entrypoint.sh curl -O https://example.com/file
 2. Remove unused dependencies from `pixi.toml`
 3. Add packages to `.pixi/.condapackageignore` to exclude caches
 4. Use `--no-cache-dir` for pip in `[pypi-dependencies]`
-
-### Change Detection Not Working
-
-**Symptoms:** Image not building when files change
-
-**Solutions:**
-1. Verify path filter matches directory: `'ml_platform/**'`
-2. Check workflow conditional: `matrix.image.changed == 'true'`
-3. Use `workflow_dispatch` to force build manually
 
 ## References
 
