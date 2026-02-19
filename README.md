@@ -249,7 +249,7 @@ git commit -m "chore: update dependencies"
 
 ### Monitoring Builds
 
-- **GitHub Actions:** https://github.com/maniaclab/dockerimages/actions
+- **GitHub Actions:** https://github.com/maniaclab/ml_platform/actions
 - **ghcr.io:** https://github.com/orgs/maniaclab/packages
 - **OSG Harbor:** https://hub.opensciencegrid.org/harbor/projects
 
