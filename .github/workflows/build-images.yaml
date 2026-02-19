@@ -1,4 +1,4 @@
-name: Build Docker Images
+name: Build Docker Image
 
 on:
   push:
@@ -20,21 +20,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: ml_platform
-            context: ./ml_platform
-            dockerfile: ./ml_platform/Dockerfile
-            registries: |-
-              ghcr.io/maniaclab/ml-platform
-              docker.io/ivukotic/ml_platform
-              hub.opensciencegrid.org/usatlas/ml-platform
-            platforms: linux/amd64
-            build_args: CUDA_VERSION=12.6
 
-    name: Build ${{ matrix.name }}
+    name: Build ml_platform
 
     steps:
       - uses: actions/checkout@v6
@@ -68,8 +55,12 @@ jobs:
         uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ matrix.registries }}
+          images: |-
+            ghcr.io/maniaclab/ml-platform
+            docker.io/ivukotic/ml_platform
+            hub.opensciencegrid.org/usatlas/ml-platform
           tags: |
+            type=ref,event=branch
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -78,10 +69,10 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
-          platforms: ${{ matrix.platforms }}
-          build-args: ${{ matrix.build_args }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          build-args: CUDA_VERSION=12.6
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
