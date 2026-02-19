@@ -17,13 +17,13 @@ Machine learning platform with Python 3.12, TensorFlow, Keras, ROOT, Jupyter, an
 
 ```bash
 # From GitHub Container Registry
-docker pull ghcr.io/maniaclab/ml-platform:main
+docker pull ghcr.io/maniaclab/ml-platform:latest
 
 # From Docker Hub
-docker pull ivukotic/ml_platform:main
+docker pull ivukotic/ml_platform:latest
 
 # From OSG Harbor
-docker pull hub.opensciencegrid.org/usatlas/ml-platform:main
+docker pull hub.opensciencegrid.org/usatlas/ml-platform:latest
 ```
 
 ## Usage
@@ -31,13 +31,13 @@ docker pull hub.opensciencegrid.org/usatlas/ml-platform:main
 ### Run Interactive Shell
 
 ```bash
-docker run --rm -it ghcr.io/maniaclab/ml-platform:main bash
+docker run --rm -it ghcr.io/maniaclab/ml-platform:latest bash
 ```
 
 ### Run Jupyter Lab
 
 ```bash
-docker run --rm -p 9999:9999 ghcr.io/maniaclab/ml-platform:main jupyter lab --ip=0.0.0.0 --port=9999
+docker run --rm -p 9999:9999 ghcr.io/maniaclab/ml-platform:latest jupyter lab --ip=0.0.0.0 --port=9999
 ```
 
 Then open http://localhost:9999 in your browser.
@@ -45,19 +45,19 @@ Then open http://localhost:9999 in your browser.
 ### Run with GPU Support
 
 ```bash
-docker run --rm --gpus all -it ghcr.io/maniaclab/ml-platform:main python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+docker run --rm --gpus all -it ghcr.io/maniaclab/ml-platform:latest python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 ```
 
 ### Mount Data Volume
 
 ```bash
-docker run --rm -v /path/to/data:/data -it ghcr.io/maniaclab/ml-platform:main bash
+docker run --rm -v /path/to/data:/data -it ghcr.io/maniaclab/ml-platform:latest bash
 ```
 
 ### Singularity/Apptainer
 
 ```bash
-singularity pull docker://ghcr.io/maniaclab/ml-platform:main
+singularity pull docker://ghcr.io/maniaclab/ml-platform:latest
 singularity run ml-platform_main.sif python --version
 ```
 
@@ -131,7 +131,7 @@ COPY --from=build /app/entrypoint.sh /app/entrypoint.sh
 The workflow builds and pushes the image on every trigger:
 
 **Triggers:**
-- **Push to `main`:** Build image → push with tags `main`, `latest`, `sha-abc1234`
+- **Push to `main`:** Build image → push with tags `latest`, `sha-abc1234`
 - **Git tag `v*`:** Build image → push with tags `X.Y.Z`, `X.Y`, `sha-abc1234`
 - **Pull request:** Build image (no push, validation only)
 - **Manual:** `workflow_dispatch` builds and pushes image
@@ -140,7 +140,7 @@ The workflow builds and pushes the image on every trigger:
 
 | Trigger | Tags |
 |---------|------|
-| Push to `main` | `main`, `latest`, `sha-abc1234` |
+| Push to `main` | `latest`, `sha-abc1234` |
 | Git tag `v2026.02.11` | `2026.02.11`, `2026.02`, `sha-abc1234` |
 | Pull request | `sha-abc1234` (no push) |
 
@@ -297,10 +297,10 @@ If you get `ModuleNotFoundError`, ensure the package is in `pixi.toml`:
 
 ```bash
 # Check CUDA is visible
-docker run --rm --gpus all ghcr.io/maniaclab/ml-platform:main nvidia-smi
+docker run --rm --gpus all ghcr.io/maniaclab/ml-platform:latest nvidia-smi
 
 # Check TensorFlow GPU support
-docker run --rm --gpus all ghcr.io/maniaclab/ml-platform:main python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+docker run --rm --gpus all ghcr.io/maniaclab/ml-platform:latest python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 ```
 
 ### Singularity GPU Issues
