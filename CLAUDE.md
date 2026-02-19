@@ -78,7 +78,7 @@ When changing dependencies or Dockerfile:
 
 ### 5. Version Management
 
-This project uses **CalVer (Calendar Versioning)** with format `YYYY.MM.DD`.
+This project uses **CalVer (Calendar Versioning)** with format `YYYY.M.D`.
 
 **Creating a release (recommended):**
 ```bash
@@ -87,13 +87,13 @@ pixi run -e dev bump  # Uses current date
 
 **Manual release:**
 ```bash
-pixi run -e dev tbump 2026.02.19
+pixi run -e dev tbump 2026.2.19
 ```
 
 This automatically:
 1. Updates `pixi.toml` and `tbump.toml`
-2. Creates a commit: `Release YYYY.MM.DD`
-3. Creates a git tag: `vYYYY.MM.DD`
+2. Creates a commit: `Release YYYY.M.D`
+3. Creates a git tag: `vYYYY.M.D`
 4. Pushes the tag to trigger CI/CD
 
 See `CONTRIBUTING.md` for detailed versioning documentation.
@@ -109,7 +109,7 @@ The `.github/workflows/build-images.yaml` builds the image on every trigger.
 
 **Build triggers:**
 - **Push to main:** Build image, push with tags `latest`, `sha-abc1234`
-- **Git tag `v*`:** Build image, push with tags `YYYY.MM.DD`, `YYYY.MM`, `sha-abc1234`
+- **Git tag `v*`:** Build image, push with tags `YYYY.M.D`, `YYYY.MM`, `sha-abc1234`
 - **Pull request:** Build image (validation only, no push)
 - **Manual dispatch:** Build image, push to registries
 
@@ -118,7 +118,7 @@ The `.github/workflows/build-images.yaml` builds the image on every trigger.
 | Trigger | Tags |
 |---------|------|
 | Push to `main` | `latest`, `sha-abc1234` |
-| Git tag `v2026.02.11` | `2026.02.11`, `2026.02`, `sha-abc1234` |
+| Git tag `v2026.2.11` | `2026.2.11`, `2026.2`, `sha-abc1234` |
 | Pull request | `sha-abc1234` (no push) |
 
 **When modifying workflow:**
@@ -183,7 +183,7 @@ The workflow builds the image on every trigger for simplicity and consistency.
 
 **Build triggers:**
 - **Push to main:** Build and push with `latest` and SHA tags
-- **Git tag `v*`:** Build and push with CalVer tags (YYYY.MM.DD, YYYY.MM) and SHA tags
+- **Git tag `v*`:** Build and push with CalVer tags (YYYY.M.D, YYYY.MM) and SHA tags
 - **Pull request:** Build for validation (no push)
 - **Manual dispatch:** Build and push
 
@@ -250,7 +250,7 @@ yamllint .github/workflows/build-images.yaml
 
 # Version management (dev environment)
 pixi run -e dev bump  # Quick release with current date
-pixi run -e dev tbump 2026.02.19  # Manual date selection
+pixi run -e dev tbump 2026.2.19  # Manual date selection
 pixi run -e dev tbump current-version  # Check current version
 ```
 

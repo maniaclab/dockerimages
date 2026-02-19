@@ -141,7 +141,7 @@ The workflow builds and pushes the image on every trigger:
 | Trigger | Tags |
 |---------|------|
 | Push to `main` | `latest`, `sha-abc1234` |
-| Git tag `v2026.02.11` | `2026.02.11`, `2026.02`, `sha-abc1234` |
+| Git tag `v2026.2.11` | `2026.2.11`, `2026.2`, `sha-abc1234` |
 | Pull request | `sha-abc1234` (no push) |
 
 **Multi-Registry Push:**
@@ -193,13 +193,13 @@ docker run --rm ml-platform:test python -c "import uproot, atlasify; print('OK')
 
 ### Releasing a Version
 
-This repository uses **CalVer** (Calendar Versioning) with the format `YYYY.MM.DD` (year, zero-padded month, zero-padded day).
+This repository uses **CalVer** (Calendar Versioning) with the format `YYYY.M.D` (year, month, day).
 
 **Example:**
 
 ```bash
 # Create annotated tag with CalVer format
-git tag -a v2026.02.11 -m "Initial consolidated release with Pixi
+git tag -a v2026.2.11 -m "Initial consolidated release with Pixi
 
   - Merged ml_base and ml_platform
   - All dependencies via conda-forge + PyPI
@@ -207,14 +207,14 @@ git tag -a v2026.02.11 -m "Initial consolidated release with Pixi
   - Python 3.12, ROOT 6.32+"
 
 # Push tag to trigger CI build
-git push origin v2026.02.11
+git push origin v2026.2.11
 ```
 
-**Important:** Always use zero-padded month and day (e.g., `02` not `2`, `09` not `9`).
+**Important:** Use the current date without leading zeros (e.g., `2.19` not `02.19`, `9.5` not `09.05`).
 
 This triggers a full build with Docker tags:
-- `2026.02.11` (full CalVer)
-- `2026.02` (year-month)
+- `2026.2.11` (full CalVer)
+- `2026.2` (year-month)
 - `sha-abc1234` (commit SHA)
 
 ## Maintenance

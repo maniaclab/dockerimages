@@ -96,7 +96,7 @@ docker run --rm --gpus all ml-platform:test python -c "import tensorflow as tf; 
 
 ## Version Management and Releases
 
-This project uses **Calendar Versioning (CalVer)** with the format `YYYY.MM.DD`.
+This project uses **Calendar Versioning (CalVer)** with the format `YYYY.M.D`.
 
 ### Creating a Release
 
@@ -110,8 +110,8 @@ pixi run -e dev bump
 
 This automatically:
 1. Updates version in `pixi.toml` and `tbump.toml`
-2. Creates a git commit with message `Release YYYY.MM.DD`
-3. Creates a git tag `vYYYY.MM.DD`
+2. Creates a git commit with message `Release YYYY.M.D`
+3. Creates a git tag `vYYYY.M.D`
 4. Pushes the tag to trigger CI/CD
 
 #### Manual Release
@@ -119,7 +119,7 @@ This automatically:
 For a specific date:
 
 ```bash
-pixi run -e dev tbump 2026.02.19
+pixi run -e dev tbump 2026.2.19
 ```
 
 #### Check Current Version
@@ -130,11 +130,11 @@ pixi run -e dev tbump current-version
 
 ### What Happens After a Release
 
-When you push a tag (e.g., `v2026.02.19`), GitHub Actions will:
+When you push a tag (e.g., `v2026.2.19`), GitHub Actions will:
 1. Build the Docker image
 2. Push to all registries with tags:
-   - `2026.02.19` (full CalVer)
-   - `2026.02` (year-month)
+   - `2026.2.19` (full CalVer)
+   - `2026.2` (year-month)
    - `latest`
    - `sha-abc1234` (commit SHA)
 
@@ -280,7 +280,7 @@ Before creating a release:
 - [ ] Key packages import without errors
 - [ ] `pixi.toml` and `pixi.lock` are in sync
 - [ ] Commit messages follow guidelines
-- [ ] Version number uses CalVer YYYY.MM.DD format
+- [ ] Version number uses CalVer YYYY.M.D format
 
 Then:
 
