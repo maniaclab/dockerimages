@@ -1,3 +1,4 @@
+ARG CUDA_VERSION="12.8"
 ARG ENVIRONMENT="default"
 
 # ============================================================
@@ -5,10 +6,12 @@ ARG ENVIRONMENT="default"
 # ============================================================
 FROM ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0 AS build
 
+ARG CUDA_VERSION
 ARG ENVIRONMENT
 
 WORKDIR /app
 COPY pixi.toml pixi.lock ./
+ENV CONDA_OVERRIDE_CUDA=$CUDA_VERSION
 RUN pixi install --locked --environment $ENVIRONMENT
 
 # Generate entrypoint from pixi shell-hook
