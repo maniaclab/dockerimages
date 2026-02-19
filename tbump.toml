@@ -1,0 +1,28 @@
+github_url = "https://github.com/maniaclab/ml_platform/"
+
+[version]
+current = "2026.02.12"
+
+# CalVer format: YYYY.MM.DD
+# This regex matches dates like 2026.02.19
+regex = '''
+  (?P<year>\d{4})
+  \.
+  (?P<month>\d{2})
+  \.
+  (?P<day>\d{2})
+  '''
+
+[git]
+message_template = "Release {new_version}"
+tag_template = "v{new_version}"
+push = true
+
+# Files to update with new version
+[[file]]
+src = "pixi.toml"
+search = 'version = "{current_version}"'
+
+[[file]]
+src = "tbump.toml"
+search = 'current = "{current_version}"'

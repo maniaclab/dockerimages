@@ -1,5 +1,5 @@
 ARG CUDA_VERSION="12.8"
-ARG ENVIRONMENT="default"
+ARG ENVIRONMENT="ml"
 
 # ============================================================
 # Stage 1: Build - install all dependencies via pixi

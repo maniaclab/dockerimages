@@ -3,12 +3,15 @@ name = "ml-platform"
 version = "2026.02.12"
 description = "MaNIAC Lab ML platform environment"
 channels = ["conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64"]
+
+[feature.ml]
 platforms = ["linux-64"]
 
-[system-requirements]
+[feature.ml.system-requirements]
 cuda = "13.0"
 
-[dependencies]
+[feature.ml.dependencies]
 # Python
 python = "==3.12"
 pixi-kernel = "*"
@@ -82,7 +85,7 @@ pillow = "*"
 tqdm = "*"
 imageio = "*"
 
-[pypi-dependencies]
+[feature.ml.pypi-dependencies]
 # Packages NOT on conda-forge (or easier from PyPI)
 tensorflow-datasets = "*"
 keras-tuner = "*"
@@ -95,3 +98,14 @@ JSAnimation = "*"
 dask-labextension = "*"
 atlasify = "*"
 rucio-jupyterlab = "*"
+
+[feature.dev.dependencies]
+python = "==3.11"
+tbump = "*"
+
+[feature.dev.tasks]
+tbump = { cmd = "tbump", description = "Run tbump" }
+
+[environments]
+dev = ["dev"]
+ml = ["ml"]
