@@ -1,4 +1,4 @@
-ARG CUDA_VERSION="12.6"
+ARG CUDA_VERSION="12.8"
 ARG ENVIRONMENT="default"
 
 # ============================================================
@@ -35,6 +35,8 @@ COPY --from=build /app/pixi.lock /app/pixi.lock
 COPY --from=build /app/.pixi/.gitignore /app/.pixi/.gitignore
 COPY --from=build /app/.pixi/.condapackageignore /app/.pixi/.condapackageignore
 COPY --from=build --chmod=0755 /app/entrypoint.sh /app/entrypoint.sh
+# Jupyter configuration
+COPY config/jupyter_notebook_config.py /usr/local/etc/jupyter_notebook_config.py
 
 # Singularity/Apptainer host GPU driver compatibility
 # see https://github.com/singularityware/singularity/issues/611
@@ -42,14 +44,8 @@ RUN mkdir -p /host-libs && \
     echo "/host-libs/" > /etc/ld.so.conf.d/000-host-libs.conf && \
     ldconfig
 
-# Jupyter configuration
-COPY config/jupyter_notebook_config.py /usr/local/etc/jupyter_notebook_config.py
-
 # Workspace directory
 RUN mkdir -p /workspace
-
-# Register Python kernel for Jupyter
-RUN /app/entrypoint.sh python -m ipykernel install --name py312 --display-name "Python 3.12"
 
 # User sync script (MaNIAC Lab infrastructure)
 RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
@@ -58,8 +54,5 @@ RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
 
 # ML platform tests
 RUN /app/entrypoint.sh git clone https://github.com/maniaclab/ML_platform_tests.git /workspace/ML_platform_tests
-
-# Build metadata
-RUN echo "Timestamp: $(date --utc)" | tee /image-build-info.txt
 
 ENTRYPOINT ["/app/entrypoint.sh"]
