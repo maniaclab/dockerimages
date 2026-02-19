@@ -29,8 +29,6 @@ if [ "$OWNER" != "" ] && [ "$CONNECT_GROUP" != "" ]; then
     chown -R $OWNER: /workspace
     # Change to the user's homedir
     cd /home/$OWNER
-    # get tutorial in.
-    cp -r /ML_platform_tests/tutorial ~/.
 
     # setup ROOT
     cd /opt/root/
