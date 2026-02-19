@@ -105,7 +105,7 @@ tbump = "*"
 
 [feature.dev.tasks]
 tbump = { cmd = "tbump", description = "Run tbump" }
-bump = { cmd = "tbump $(date +\"%Y.%m.%d\")", description = "Run tbump with current date" }
+bump = { cmd = "tbump $(date +\"%Y.%-m.%-d\")", description = "Run tbump with current date" }
 
 [environments]
 dev = ["dev"]
