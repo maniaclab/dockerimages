@@ -1,29 +1,103 @@
-# MaNIAC Lab Docker Images
+# ml_platform
 
-Consolidated Docker image repository using Pixi for dependency management and modern GitHub Actions CI/CD.
+Machine learning platform with Python 3.12, TensorFlow, Keras, ROOT, Jupyter, and HEP tools. Docker image repository for the MaNIAC Lab ML platform using Pixi for dependency management and GitHub Actions CI/CD.
 
-## Repository Structure
+## Registries
 
+**Available registries:**
+- `ghcr.io/maniaclab/ml-platform`
+- `docker.io/ivukotic/ml_platform`
+- `hub.opensciencegrid.org/usatlas/ml-platform`
+
+**Base:** `ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0` (Ubuntu 24.04 + CUDA 13.0)
+
+**Platforms:** linux/amd64
+
+## Pull Image
+
+```bash
+# From GitHub Container Registry
+docker pull ghcr.io/maniaclab/ml-platform:main
+
+# From Docker Hub
+docker pull ivukotic/ml_platform:main
+
+# From OSG Harbor
+docker pull hub.opensciencegrid.org/usatlas/ml-platform:main
 ```
-dockerimages/
-├── .github/
-│   └── workflows/
-│       └── build-images.yaml    # CI/CD workflow with embedded image config
-├── ml_platform/
-│   ├── Dockerfile               # Multi-stage build with Pixi
-│   ├── pixi.toml                # Dependency manifest (conda-forge + PyPI)
-│   ├── pixi.lock                # Locked dependency versions
-│   ├── .dockerignore            # Exclude .pixi cache from builds
-│   └── config/
-│       └── jupyter_notebook_config.py
-└── README.md
+
+## Usage
+
+### Run Interactive Shell
+
+```bash
+docker run --rm -it ghcr.io/maniaclab/ml-platform:main bash
 ```
 
-## Images
+### Run Jupyter Lab
 
-- **[ml_platform](ml_platform/)** - Machine learning platform with Python 3.12, TensorFlow, Keras, ROOT, Jupyter, and HEP tools
+```bash
+docker run --rm -p 9999:9999 ghcr.io/maniaclab/ml-platform:main jupyter lab --ip=0.0.0.0 --port=9999
+```
 
-See each image's subdirectory for detailed documentation, dependencies, and usage examples.
+Then open http://localhost:9999 in your browser.
+
+### Run with GPU Support
+
+```bash
+docker run --rm --gpus all -it ghcr.io/maniaclab/ml-platform:main python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+```
+
+### Mount Data Volume
+
+```bash
+docker run --rm -v /path/to/data:/data -it ghcr.io/maniaclab/ml-platform:main bash
+```
+
+### Singularity/Apptainer
+
+```bash
+singularity pull docker://ghcr.io/maniaclab/ml-platform:main
+singularity run ml-platform_main.sif python --version
+```
+
+## Dependencies
+
+All dependencies are managed via Pixi (conda-forge + PyPI). See [`pixi.toml`](pixi.toml) for the complete list and version constraints.
+
+**Highlights:**
+- Python 3.12, ROOT 6.32+, OpenJDK 8
+- ML frameworks: TensorFlow, Keras, scikit-learn
+- Data science: NumPy, Pandas, SciPy, PyArrow, HDF5
+- Jupyter ecosystem: JupyterLab, ipywidgets, jupyterlab-git, RISE
+- HEP tools: uproot, atlasify, rucio-jupyterlab
+- Visualization: Matplotlib, Seaborn, Bokeh
+
+## Features
+
+### Pixi Environment
+
+All packages are managed via Pixi and activated automatically via the entrypoint. No need to source activation scripts.
+
+### Jupyter Configuration
+
+- Binds to `0.0.0.0:9999` by default
+- Password change disabled (for container security)
+- Browser auto-open disabled
+
+### GPU Support
+
+- CUDA 13.0 base image
+- Singularity/Apptainer GPU driver compatibility via `/host-libs/` mount
+- TensorFlow compiled with GPU support
+
+### User Management
+
+Includes `sync_users_debian.sh` for MaNIAC Lab user synchronization infrastructure.
+
+### ML Platform Tests
+
+Pre-installed at `/workspace/ML_platform_tests/` for validation and tutorials.
 
 ## Architecture
 
@@ -58,27 +132,21 @@ COPY --from=build /app/entrypoint.sh /app/entrypoint.sh
 
 ### CI/CD Workflow
 
-Image configurations are defined directly in `.github/workflows/build-images.yaml` as a static matrix. All images are built on every trigger for simplicity and consistency:
-
-```yaml
-matrix:
-  include:
-    - name: ml_platform
-      context: ./ml_platform
-      dockerfile: ./ml_platform/Dockerfile
-      registries: |-
-        ghcr.io/maniaclab/ml-platform
-        docker.io/ivukotic/ml_platform
-        hub.opensciencegrid.org/usatlas/ml-platform
-      platforms: linux/amd64
-      build_args: CUDA_VERSION=12.6
-```
+The workflow builds and pushes the image on every trigger:
 
 **Triggers:**
-- **Push to `main`:** Build ALL images → tag as `latest` + `sha-abc1234`
-- **Git tag `v*`:** Build ALL images → tag as `X.Y.Z`, `X.Y`, `latest`, `sha-abc1234`
-- **Pull request:** Build ALL images (no push, validation only)
-- **Manual:** `workflow_dispatch` builds ALL images
+- **Push to `main`:** Build image → push with tags `main`, `latest`, `sha-abc1234`
+- **Git tag `v*`:** Build image → push with tags `X.Y.Z`, `X.Y`, `sha-abc1234`
+- **Pull request:** Build image (no push, validation only)
+- **Manual:** `workflow_dispatch` builds and pushes image
+
+**Tag behavior:**
+
+| Trigger | Tags |
+|---------|------|
+| Push to `main` | `main`, `latest`, `sha-abc1234` |
+| Git tag `v2026.02.11` | `2026.02.11`, `2026.02`, `sha-abc1234` |
+| Pull request | `sha-abc1234` (no push) |
 
 **Multi-Registry Push:**
 Authenticated via GitHub secrets:
@@ -86,135 +154,45 @@ Authenticated via GitHub secrets:
 - `DOCKER_USERNAME` / `DOCKER_PASSWORD` for docker.io
 - `OSG_HARBOR_ROBOT_USER` / `OSG_HARBOR_ROBOT_PASSWORD` for OSG Harbor
 
-## Adding a New Image
-
-### 1. Create Image Directory
-
-```bash
-mkdir -p new_image/config
-cd new_image
-```
-
-### 2. Create `pixi.toml`
-
-```toml
-[workspace]
-name = "new-image"
-version = "1.0.0"
-description = "Description here"
-channels = ["conda-forge"]
-platforms = ["linux-64", "osx-arm64"]
-
-[dependencies]
-python = "3.12.*"
-numpy = "*"
-# ... add dependencies
-
-[pypi-dependencies]
-# Packages not on conda-forge
-some-package = "*"
-```
-
-### 3. Generate `pixi.lock`
-
-```bash
-CONDA_OVERRIDE_CUDA=12.6 pixi install
-# This creates pixi.lock - commit both files
-```
-
-### 4. Create `Dockerfile`
-
-```dockerfile
-ARG CUDA_VERSION="12.6"
-ARG ENVIRONMENT="default"
-
-FROM ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0 AS build
-ARG CUDA_VERSION
-ARG ENVIRONMENT
-WORKDIR /app
-COPY pixi.toml pixi.lock ./
-ENV CONDA_OVERRIDE_CUDA=$CUDA_VERSION
-RUN pixi install --locked --environment $ENVIRONMENT
-RUN echo "#!/bin/bash" > /app/entrypoint.sh && \
-    pixi shell-hook --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
-    echo 'exec "$@"' >> /app/entrypoint.sh
-
-FROM ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0 AS final
-ARG ENVIRONMENT
-WORKDIR /app
-COPY --from=build /app/.pixi/envs/$ENVIRONMENT /app/.pixi/envs/$ENVIRONMENT
-COPY --from=build /app/pixi.toml /app/pixi.toml
-COPY --from=build /app/pixi.lock /app/pixi.lock
-COPY --from=build --chmod=0755 /app/entrypoint.sh /app/entrypoint.sh
-
-# Add your custom setup here
-RUN /app/entrypoint.sh python --version
-
-ENTRYPOINT ["/app/entrypoint.sh"]
-```
-
-### 5. Create `.dockerignore`
-
-```
-.pixi/
-.git
-*.md
-```
-
-### 6. Update Workflow
-
-Edit `.github/workflows/build-images.yaml` and add a new entry to the `matrix.include` array:
-
-```yaml
-- name: new_image
-  context: ./new_image
-  dockerfile: ./new_image/Dockerfile
-  registries: |-
-    ghcr.io/maniaclab/new-image
-    docker.io/username/new-image
-  platforms: linux/amd64
-  build_args: CUDA_VERSION=12.6
-```
-
-**Important:** Use the YAML block scalar `|-` for the `registries` field to ensure proper formatting. The workflow builds ALL images on every trigger.
-
-### 7. Test Locally
-
-```bash
-docker build --platform linux/amd64 -t new-image:test new_image/
-docker run --rm new-image:test python --version
-```
-
-### 8. Commit and Push
-
-```bash
-git add new_image/ .github/workflows/build-images.yaml
-git commit -m "feat: add new-image Docker image"
-git push origin main
-```
-
-The CI will automatically build and push to all configured registries.
-
-## Development Workflow
+## Development
 
 ### Modifying Dependencies
 
-1. Edit `<image>/pixi.toml`
-2. Regenerate lock file: `cd <image> && CONDA_OVERRIDE_CUDA=12.6 pixi install`
-3. Test locally: `docker build -t <image>:test <image>/`
-4. Commit both `pixi.toml` and `pixi.lock`
+1. Edit `pixi.toml`
+2. Regenerate lock file:
+   ```bash
+   CONDA_OVERRIDE_CUDA=12.6 pixi install
+   ```
+3. Test locally:
+   ```bash
+   docker build -t ml-platform:test .
+   ```
+4. Commit both files:
+   ```bash
+   git add pixi.toml pixi.lock
+   git commit -m "chore: update dependencies"
+   ```
 
 ### Testing Locally
 
 ```bash
-# Build image
-docker build --platform linux/amd64 -t <image>:test <image>/
+# Build
+docker build --platform linux/amd64 -t ml-platform:test .
 
-# Verify environment activates
-docker run --rm <image>:test python --version
+# Test Python
+docker run --rm ml-platform:test python --version
 
-# Interactive shell
-docker run --rm -it <image>:test bash
+# Test ML packages
+docker run --rm ml-platform:test python -c "import tensorflow, keras, numpy, pandas; print('OK')"
+
+# Test ROOT
+docker run --rm ml-platform:test root --version
+
+# Test Jupyter
+docker run --rm ml-platform:test jupyter --version
+
+# Test HEP tools
+docker run --rm ml-platform:test python -c "import uproot, atlasify; print('OK')"
 ```
 
 ### Releasing a Version
@@ -238,10 +216,9 @@ git push origin v2026.02.11
 
 **Important:** Always use zero-padded month and day (e.g., `02` not `2`, `09` not `9`).
 
-This triggers a full build of all images with Docker tags:
+This triggers a full build with Docker tags:
 - `2026.02.11` (full CalVer)
 - `2026.02` (year-month)
-- `latest`
 - `sha-abc1234` (commit SHA)
 
 ## Maintenance
@@ -251,7 +228,7 @@ This triggers a full build of all images with Docker tags:
 The base image `ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0` should be updated periodically:
 
 1. Check for newer versions: https://github.com/prefix-dev/pixi-docker/pkgs/container/pixi
-2. Update `FROM` lines in Dockerfiles
+2. Update `FROM` lines in Dockerfile
 3. Test locally
 4. Commit and push
 
@@ -260,7 +237,6 @@ The base image `ghcr.io/prefix-dev/pixi:noble-cuda-13.0.0` should be updated per
 Pixi automatically resolves the latest compatible versions unless pinned. To update:
 
 ```bash
-cd <image>/
 # Update pixi.toml with new version constraints
 vim pixi.toml
 
@@ -268,7 +244,7 @@ vim pixi.toml
 CONDA_OVERRIDE_CUDA=12.6 pixi install
 
 # Test
-docker build -t <image>:test .
+docker build -t ml-platform:test .
 
 # Commit both files
 git add pixi.toml pixi.lock
@@ -315,12 +291,38 @@ RUN /app/entrypoint.sh curl -O https://example.com/file
 3. Add packages to `.pixi/.condapackageignore` to exclude caches
 4. Use `--no-cache-dir` for pip in `[pypi-dependencies]`
 
+### Import Errors
+
+If you get `ModuleNotFoundError`, ensure the package is in `pixi.toml`:
+- Check if package exists on conda-forge: https://anaconda.org/conda-forge/<package>
+- If not, add to `[pypi-dependencies]` section instead
+
+### GPU Not Detected
+
+```bash
+# Check CUDA is visible
+docker run --rm --gpus all ghcr.io/maniaclab/ml-platform:main nvidia-smi
+
+# Check TensorFlow GPU support
+docker run --rm --gpus all ghcr.io/maniaclab/ml-platform:main python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+```
+
+### Singularity GPU Issues
+
+Ensure `/host-libs/` is bound to host driver paths:
+```bash
+singularity run --nv --bind /usr/lib/x86_64-linux-gnu:/host-libs ml-platform_main.sif
+```
+
 ## References
 
 - **Pixi Documentation:** https://pixi.sh/
 - **Matthew Feickert's SciPy 2024 Proceedings:** Pixi multi-stage Docker pattern
 - **GitHub Actions:** https://docs.github.com/en/actions
 - **Docker Build Push Action:** https://github.com/docker/build-push-action
+- **TensorFlow GPU Support:** https://www.tensorflow.org/install/gpu
+- **ROOT Documentation:** https://root.cern/
+- **JupyterLab Documentation:** https://jupyterlab.readthedocs.io/
 - **Singularity GPU Support:** https://github.com/singularityware/singularity/issues/611
 
 ## License
