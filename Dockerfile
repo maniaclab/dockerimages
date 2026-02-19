@@ -37,6 +37,7 @@ COPY --from=build /app/.pixi/.condapackageignore /app/.pixi/.condapackageignore
 COPY --from=build --chmod=0755 /app/entrypoint.sh /app/entrypoint.sh
 # Jupyter configuration
 COPY config/jupyter_notebook_config.py /usr/local/etc/jupyter_notebook_config.py
+COPY --chmod=0755 config/SetupPrivateJupyterLab.sh /usr/local/bin/SetupPrivateJupyterLab.sh
 
 # Singularity/Apptainer host GPU driver compatibility
 # see https://github.com/singularityware/singularity/issues/611
@@ -51,8 +52,5 @@ RUN mkdir -p /workspace
 RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
     https://raw.githubusercontent.com/maniaclab/ci-connect-api/master/resources/provisioner/sync_users_debian.sh && \
     chmod +x /usr/local/bin/sync_users_debian.sh
-
-# ML platform tests
-RUN /app/entrypoint.sh git clone https://github.com/maniaclab/ML_platform_tests.git /workspace/ML_platform_tests
 
 ENTRYPOINT ["/app/entrypoint.sh"]

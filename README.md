@@ -93,11 +93,7 @@ All packages are managed via Pixi and activated automatically via the entrypoint
 
 ### User Management
 
-Includes `sync_users_debian.sh` for MaNIAC Lab user synchronization infrastructure.
-
-### ML Platform Tests
-
-Pre-installed at `/workspace/ML_platform_tests/` for validation and tutorials.
+Includes `sync_users_debian.sh` for MaNIAC Lab user synchronization infrastructure and `SetupPrivateJupyterLab.sh` for setting up private JupyterLab instances.
 
 ## Architecture
 
