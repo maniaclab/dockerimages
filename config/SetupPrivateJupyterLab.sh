@@ -1,8 +1,3 @@
-
-# With RISE, a Jupyter notebook extension, you can instantly turn your jupyter notebook into a live reveal.js-based presentation.
-jupyter-nbextension install rise --py --sys-prefix
-jupyter-nbextension enable rise --py --sys-prefix
-
 if [ "$1" != "" ]; then
     echo "Git Repo $1 requested..."
     cd /workspace/
@@ -30,18 +25,11 @@ if [ "$OWNER" != "" ] && [ "$CONNECT_GROUP" != "" ]; then
     # Change to the user's homedir
     cd /home/$OWNER
 
-    # setup ROOT
-    cd /opt/root/
-    source bin/thisroot.sh
-    cp -r $ROOTSYS/etc/notebook/kernels/root /usr/local/share/jupyter/kernels/
-
-    python3.8 -m pip --no-cache-dir install  root-pandas 
-    
     unset JUPYTER_PATH
     unset JUPYTER_CONFIG_DIR
     cd /home/$OWNER
 
     # Invoke Jupyter lab as the user
-    su $OWNER -c "jupyter lab --ServerApp.root_dir=/home/${OWNER} --no-browser --config=/usr/local/etc/jupyter_notebook_config.py --NotebookApp.token=${JUPYTER_TOKEN} --ServerApp.token=${JUPYTER_TOKEN}"
+    su $OWNER -c "pixi run -e ml jupyter lab --ServerApp.root_dir=/home/${OWNER} --no-browser --config=/usr/local/etc/jupyter_notebook_config.py --NotebookApp.token=${JUPYTER_TOKEN} --ServerApp.token=${JUPYTER_TOKEN}"
 
-fi 
+fi
