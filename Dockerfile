@@ -17,6 +17,9 @@ RUN pixi install --manifest-path /app/pixi.toml --locked --environment $ENVIRONM
 # Generate entrypoint from pixi shell-hook
 RUN echo "#!/bin/bash" > /app/entrypoint.sh && \
     echo "export PYTHONNOUSERSITE=1" >> /app/entrypoint.sh && \
+    echo "JUPYTER_NO_CONFIG=1" >> /app/entrypoint.sh && \
+    echo "JUPYTER_CONFIG_DIR=/app/.jupyter" >> /app/entrypoint.sh && \
+    echo "JUPYTER_DATA_DIR=/app/.jupyter" >> /app/entrypoint.sh && \
     pixi shell-hook --manifest-path /app/pixi.toml \
                     --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
     echo 'exec "$@"' >> /app/entrypoint.sh
