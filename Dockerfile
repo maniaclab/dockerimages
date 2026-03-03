@@ -16,7 +16,9 @@ RUN pixi install --manifest-path /app/pixi.toml --locked --environment $ENVIRONM
 
 # Generate entrypoint from pixi shell-hook
 RUN echo "#!/bin/bash" > /app/entrypoint.sh && \
-    pixi shell-hook --manifest-path /app/pixi.toml --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
+    echo "export PYTHONNOUSERSITE=1" >> /app/entrypoint.sh && \
+    pixi shell-hook --manifest-path /app/pixi.toml \
+                    --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
     echo 'exec "$@"' >> /app/entrypoint.sh
 
 # ============================================================
@@ -52,5 +54,12 @@ RUN mkdir -p /workspace
 RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
     https://raw.githubusercontent.com/maniaclab/ci-connect-api/master/resources/provisioner/sync_users_debian.sh && \
     chmod +x /usr/local/bin/sync_users_debian.sh
+
+# Disable user site-packages
+ENV PYTHONNOUSERSITE=1
+# Force Jupyter to ignore user dirs
+ENV JUPYTER_NO_CONFIG=1
+ENV JUPYTER_CONFIG_DIR=/app/.jupyter
+ENV JUPYTER_DATA_DIR=/app/.jupyter
 
 ENTRYPOINT ["/app/entrypoint.sh"]
