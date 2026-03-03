@@ -12,11 +12,11 @@ ARG ENVIRONMENT
 WORKDIR /app
 COPY pixi.toml pixi.lock ./
 ENV CONDA_OVERRIDE_CUDA=$CUDA_VERSION
-RUN pixi install --locked --environment $ENVIRONMENT
+RUN pixi install --manifest-path /app/pixi.toml --locked --environment $ENVIRONMENT
 
 # Generate entrypoint from pixi shell-hook
 RUN echo "#!/bin/bash" > /app/entrypoint.sh && \
-    pixi shell-hook --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
+    pixi shell-hook --manifest-path /app/pixi.toml --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
     echo 'exec "$@"' >> /app/entrypoint.sh
 
 # ============================================================
