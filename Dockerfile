@@ -53,6 +53,8 @@ RUN mkdir -p /host-libs && \
 # Workspace directory
 RUN mkdir -p /workspace
 
+RUN mkdir -p /app/.jupyter/runtime
+
 # User sync script (MaNIAC Lab infrastructure)
 RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
     https://raw.githubusercontent.com/maniaclab/ci-connect-api/master/resources/provisioner/sync_users_debian.sh && \
