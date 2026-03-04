@@ -19,7 +19,7 @@ RUN echo "#!/bin/bash" > /app/entrypoint.sh && \
     echo "export PYTHONNOUSERSITE=1" >> /app/entrypoint.sh && \
     echo "JUPYTER_CONFIG_DIR=/app/.jupyter/config" >> /app/entrypoint.sh && \
     echo "JUPYTER_DATA_DIR=/app/.jupyter/data" >> /app/entrypoint.sh && \
-    echo "JUPYTER_RUNTIME_DIR=/tmp/jupyter-runtime" >> /app/entrypoint.sh && \
+    echo "JUPYTER_RUNTIME_DIR=/app/.jupyter/runtime" >> /app/entrypoint.sh && \
     pixi shell-hook --manifest-path /app/pixi.toml \
                     --environment $ENVIRONMENT -s bash >> /app/entrypoint.sh && \
     echo 'exec "$@"' >> /app/entrypoint.sh
@@ -53,13 +53,8 @@ RUN mkdir -p /host-libs && \
 # Workspace directory
 RUN mkdir -p /workspace
 # match jupyter configuration
-RUN mkdir -p \
-    /app/.jupyter/config \
-    /app/.jupyter/data \
-    /tmp/jupyter-runtime && \
-    chmod 755 /app/.jupyter/config && \
-    chmod 755 /app/.jupyter/data && \
-    chmod 1777 /tmp/jupyter-runtime
+RUN mkdir -p /app/.jupyter/{config,data,runtime} && \
+    chmod -R a+rwx /app/.jupyter
 
 # User sync script (MaNIAC Lab infrastructure)
 RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
@@ -71,6 +66,6 @@ ENV PYTHONNOUSERSITE=1
 # Force Jupyter to ignore user dirs
 ENV JUPYTER_CONFIG_DIR=/app/.jupyter/config
 ENV JUPYTER_DATA_DIR=/app/.jupyter/data
-ENV JUPYTER_RUNTIME_DIR=/tmp/jupyter-runtime
+ENV JUPYTER_RUNTIME_DIR=/app/.jupyter/runtime
 
 ENTRYPOINT ["/app/entrypoint.sh"]
