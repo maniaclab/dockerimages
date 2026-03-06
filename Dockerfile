@@ -55,6 +55,7 @@ RUN mkdir -p /workspace
 # match jupyter configuration
 RUN mkdir -p /app/.jupyter/{config,data,runtime} && \
     chmod -R a+rwx /app/.jupyter && \
+    chmod -R a+rwx /app/.pixi && \
     chmod a+rwx /app/pixi.{toml,lock}
 
 # User sync script (MaNIAC Lab infrastructure)
