@@ -56,7 +56,7 @@ RUN mkdir -p /workspace
 RUN mkdir -p /app/.jupyter/{config,data,runtime} && \
     chmod -R a+rwx /app/.jupyter && \
     chmod -R a+rwx /app/.pixi && \
-    chmod a+rwx /app/pixi.{toml,lock}
+    chmod a+rwx /app/pixi.toml /app/pixi.lock
 
 # User sync script (MaNIAC Lab infrastructure)
 RUN /app/entrypoint.sh curl -fsSL -o /usr/local/bin/sync_users_debian.sh \
